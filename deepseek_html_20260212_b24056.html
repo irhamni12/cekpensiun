@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Usia Pensiun PNS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            border-left-color: #f44336;
+        }
+        
+        .pensiun-info {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        
+        .usia-pensiun {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Cek Usia Pensiun PNS</h1>
+        
+        <div class="form-group">
+            <label for="nama">Nama Lengkap:</label>
+            <input type="text" id="nama" placeholder="Masukkan nama Anda">
+        </div>
+        
+        <div class="form-group">
+            <label for="tanggalLahir">Tanggal Lahir:</label>
+            <input type="date" id="tanggalLahir">
+        </div>
+        
+        <div class="form-group">
+            <label for="jabatan">Jabatan:</label>
+            <select id="jabatan">
+                <option value="">-- Pilih Jabatan --</option>
+                <option value="guru">Guru</option>
+                <option value="tataUsaha">Tata Usaha</option>
+            </select>
+        </div>
+        
+        <button onclick="cekPensiun()">Cek Usia Pensiun</button>
+        
+        <div id="result" class="result" style="display: none;">
+            <!-- Hasil akan ditampilkan di sini -->
+        </div>
+    </div>
+
+    <script>
+        function cekPensiun() {
+            const nama = document.getElementById('nama').value;
+            const tanggalLahir = document.getElementById('tanggalLahir').value;
+            const jabatan = document.getElementById('jabatan').value;
+            const resultDiv = document.getElementById('result');
+            
+            // Validasi input
+            if (!nama || !tanggalLahir || !jabatan) {
+                showError('Mohon isi semua data yang diperlukan!');
+                return;
+            }
+            
+            // Hitung usia pensiun berdasarkan jabatan
+            let usiaPensiun;
+            let jabatanDisplay;
+            
+            if (jabatan === 'guru') {
+                usiaPensiun = 60;
+                jabatanDisplay = 'Guru';
+            } else {
+                usiaPensiun = 58;
+                jabatanDisplay = 'Tata Usaha';
+            }
+            
+            // Hitung tanggal pensiun
+            const tglLahir = new Date(tanggalLahir);
+            const tglPensiun = new Date(tglLahir);
+            tglPensiun.setFullYear(tglLahir.getFullYear() + usiaPensiun);
+            
+            // Hitung usia saat ini
+            const today = new Date();
+            let usia = today.getFullYear() - tglLahir.getFullYear();
+            const monthDiff = today.getMonth() - tglLahir.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < tglLahir.getDate())) {
+                usia--;
+            }
+            
+            // Hitung sisa waktu pensiun
+            let sisaTahun = usiaPensiun - usia;
+            let sisaBulan = 0;
+            let sisaHari = 0;
+            
+            if (sisaTahun > 0) {
+                const nextBirthday = new Date(tglLahir);
+                nextBirthday.setFullYear(today.getFullYear());
+                
+                if (today > nextBirthday) {
+                    nextBirthday.setFullYear(today.getFullYear() + 1);
+                }
+                
+                const diffTime = nextBirthday - today;
+                sisaBulan = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44));
+                sisaHari = Math.floor(diffTime / (1000 * 60 * 60 * 24)) % 30;
+            }
+            
+            // Format tanggal pensiun
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const tglPensiunFormatted = tglPensiun.toLocaleDateString('id-ID', options);
+            
+            // Tampilkan hasil
+            let statusPensiun = '';
+            let statusClass = '';
+            
+            if (usia >= usiaPensiun) {
+                statusPensiun = 'SUDAH MEMENUHI SYARAT PENSIUN';
+                statusClass = 'usia-pensiun';
+            } else {
+                statusPensiun = 'BELUM MEMENUHI SYARAT PENSIUN';
+                statusClass = '';
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            
+            resultDiv.innerHTML = `
+                <h3>📊 Hasil Perhitungan</h3>
+                <p><strong>Nama:</strong> ${nama}</p>
+                <p><strong>Jabatan:</strong> ${jabatanDisplay}</p>
+                <p><strong>Tanggal Lahir:</strong> ${tglLahir.toLocaleDateString('id-ID', options)}</p>
+                <p><strong>Usia Saat Ini:</strong> ${usia} tahun</p>
+                <p><strong>Usia Pensiun:</strong> <span class="usia-pensiun">${usiaPensiun} tahun</span></p>
+                <p><strong>Tanggal Pensiun:</strong> ${tglPensiunFormatted}</p>
+                <hr style="margin: 15px 0;">
+                <p><strong>Status:</strong> <span style="font-weight: bold; color: ${usia >= usiaPensiun ? '#f44336' : '#4CAF50'}">${statusPensiun}</span></p>
+                ${sisaTahun > 0 ? `<p><strong>Sisa Waktu:</strong> ${sisaTahun} tahun, ${sisaBulan} bulan, ${sisaHari} hari lagi</p>` : ''}
+            `;
+        }
+        
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result error';
+            resultDiv.innerHTML = `
+                <h3>⚠️ Error</h3>
+                <p>${message}</p>
+            `;
+        }
+        
+        // Set default tanggal ke hari ini untuk input date
+        window.onload = function() {
+            const today = new Date();
+            const year = today.getFullYear();
+            let month = today.getMonth() + 1;
+            let day = today.getDate();
+            
+            if (month < 10) month = '0' + month;
+            if (day < 10) day = '0' + day;
+            
+            document.getElementById('tanggalLahir').value = `${year-30}-${month}-${day}`;
+        };
+    </script>
+</body>
+</html>
